@@ -1,0 +1,677 @@
+/**
+ * 🎨 Animated GitHub Contribution Calendar - Portable Component
+ * A self-contained, animated contribution calendar that can be dropped into any website
+ */
+
+class ContributionCalendar {
+    constructor(options = {}) {
+        // Default configuration
+        const config = window.ContributionCalendarConfig || {};
+        
+        this.options = {
+            container: '#contribution-calendar',
+            username: config.GITHUB_USERNAME || 'demo-user',
+            theme: config.DEFAULT_THEME || 'dark',
+            ...options
+        };
+        
+        // Grid settings
+        this.ROWS = config.GRID_ROWS || 7;
+        this.COLS = config.GRID_COLS || 53; // Full year + 1 extra week
+        this.GAP_PX = config.GAP_SIZE || 3;
+        this.SQUARE_PX = config.SQUARE_SIZE || 14;
+        this.username = this.options.username;
+        
+        // Custom date range settings
+        this.startDate = config.START_DATE || new Date('2025-01-01');
+        this.endDate = config.END_DATE || new Date('2025-12-31');
+        
+        // Pattern types
+        this.PATTERNS = {
+            GAME_OF_LIFE: 'gameOfLife',
+            RIPPLE: 'ripple',
+            WAVE: 'wave',
+            RAIN: 'rain',
+            SPIRAL: 'spiral',
+            NOISE: 'noise',
+            RULE30: 'rule30'
+        };
+
+        // Animation state
+        this.grid = this.createEmptyGrid();
+        this.isRunning = false;
+        this.generation = 0;
+        this.currentPattern = this.PATTERNS.GAME_OF_LIFE;
+        this.patternState = {};
+        this.animationSpeed = config.ANIMATION_SPEED || 150;
+        this.maxGenerations = config.MAX_GENERATIONS || 500;
+        this.animationFrame = null;
+        this.lastUpdateTime = 0;
+        this.activeLetterIndex = null;
+        this.baselineGrid = null;
+        this.githubData = null;
+
+        // Pattern mapping for letters
+        this.animateLetterPatterns = [
+            this.PATTERNS.GAME_OF_LIFE, // A
+            this.PATTERNS.NOISE,        // c
+            this.PATTERNS.WAVE,         // t
+            this.PATTERNS.SPIRAL,       // i
+            this.PATTERNS.RULE30,       // v
+            this.PATTERNS.RAIN,         // i
+            this.PATTERNS.RIPPLE,       // t
+            this.PATTERNS.GAME_OF_LIFE  // y
+        ];
+
+        this.init();
+    }
+
+    createEmptyGrid() {
+        return new Array(this.ROWS).fill(0).map(() => new Array(this.COLS).fill(0));
+    }
+
+    createRandomGrid() {
+        return new Array(this.ROWS).fill(0).map(() => 
+            new Array(this.COLS).fill(0).map(() => Math.random() > 0.7 ? 1 : 0)
+        );
+    }
+
+    init() {
+        this.createContainer();
+        this.setupDOM();
+        // Set dark mode as default
+        this.container.classList.add('dark');
+        this.setupEventListeners();
+        this.renderGrid();
+        this.generateMockData();
+    }
+
+    createContainer() {
+        console.log('🏗️ createContainer called');
+        console.log('🔍 Looking for container:', this.options.container);
+        const targetElement = document.querySelector(this.options.container);
+        console.log('📦 Target element found:', targetElement);
+        if (!targetElement) {
+            console.error(`Container element "${this.options.container}" not found`);
+            return;
+        }
+
+        // Protect container from React interference
+        targetElement.setAttribute('data-calendar-container', 'true');
+        targetElement.style.position = 'relative';
+        targetElement.style.zIndex = '10';
+
+        // Create the main container
+        this.container = document.createElement('div');
+        this.container.className = `contribution-calendar-container ${this.options.theme}`;
+        
+        // Create the HTML structure - header outside the bordered container
+        this.container.innerHTML = `
+            <div class="cc-header">
+                <h1 class="cc-title" id="cc-title">
+                    <span class="cc-letter" data-pattern="gameOfLife" data-index="0">A</span>
+                    <span class="cc-letter" data-pattern="noise" data-index="1">c</span>
+                    <span class="cc-letter" data-pattern="wave" data-index="2">t</span>
+                    <span class="cc-letter" data-pattern="spiral" data-index="3">i</span>
+                    <span class="cc-letter" data-pattern="rule30" data-index="4">v</span>
+                    <span class="cc-letter" data-pattern="rain" data-index="5">i</span>
+                    <span class="cc-letter" data-pattern="ripple" data-index="6">t</span>
+                    <span class="cc-letter" data-pattern="gameOfLife" data-index="7">y</span>
+                </h1>
+            </div>
+            
+            <div class="cc-calendar-container">
+                <div class="cc-grid-container" id="cc-gridContainer">
+                    <!-- Grid will be generated by JavaScript -->
+                </div>
+            </div>
+        `;
+
+        targetElement.appendChild(this.container);
+    }
+
+    setupDOM() {
+        const gridContainer = this.container.querySelector('#cc-gridContainer');
+        gridContainer.innerHTML = '';
+
+        for (let col = 0; col < this.COLS; col++) {
+            const column = document.createElement('div');
+            column.className = 'cc-column';
+            column.setAttribute('data-col', col);
+
+            for (let row = 0; row < this.ROWS; row++) {
+                const square = document.createElement('div');
+                square.className = 'cc-square';
+                square.setAttribute('data-row', row);
+                square.setAttribute('data-col', col);
+                const dateString = this.getDateForGridPosition(row, col);
+                square.title = `No contributions on ${dateString}`;
+                column.appendChild(square);
+            }
+
+            gridContainer.appendChild(column);
+        }
+    }
+
+    setupEventListeners() {
+        // Letter click handlers
+        const letters = this.container.querySelectorAll('.cc-letter');
+        letters.forEach((letter, index) => {
+            letter.addEventListener('click', () => this.handleLetterClick(index));
+        });
+
+        // Grid cell click handlers
+        const squares = this.container.querySelectorAll('.cc-square');
+        squares.forEach(square => {
+            square.addEventListener('click', (e) => {
+                const row = parseInt(e.target.getAttribute('data-row'));
+                const col = parseInt(e.target.getAttribute('data-col'));
+                this.toggleCell(row, col);
+            });
+        });
+    }
+
+    handleLetterClick(index) {
+        const letters = this.container.querySelectorAll('.cc-letter');
+        const newPattern = this.animateLetterPatterns[index];
+
+        if (!this.isRunning) {
+            // Start: save baseline and run
+            this.baselineGrid = this.grid.map(row => [...row]);
+            this.currentPattern = newPattern;
+            this.startPatternAnimation();
+            this.setActiveLetterIndex(index);
+            return;
+        }
+
+        if (this.activeLetterIndex === index) {
+            // Stop: restore baseline grid (same letter clicked twice)
+            this.stopAnimation();
+            if (this.baselineGrid) {
+                this.grid = this.baselineGrid.map(row => [...row]);
+                this.updateGridDisplay();
+            }
+            this.setActiveLetterIndex(null);
+            return;
+        }
+
+        // Switch to different pattern
+        this.currentPattern = newPattern;
+        this.generation = 0;
+        this.initializePattern();
+        this.setActiveLetterIndex(index);
+    }
+
+    setActiveLetterIndex(index) {
+        const letters = this.container.querySelectorAll('.cc-letter');
+        letters.forEach(letter => letter.classList.remove('active'));
+        
+        if (index !== null) {
+            letters[index].classList.add('active');
+        }
+        
+        this.activeLetterIndex = index;
+    }
+
+    toggleCell(row, col) {
+        if (row >= 0 && row < this.ROWS && col >= 0 && col < this.COLS) {
+            this.grid[row][col] = this.grid[row][col] === 0 ? 1 : 0;
+            this.updateGridDisplay();
+        }
+    }
+
+    renderGrid() {
+        this.updateGridDisplay();
+    }
+
+    updateGridDisplay() {
+        for (let row = 0; row < this.ROWS; row++) {
+            for (let col = 0; col < this.COLS; col++) {
+                const square = this.container.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (square) {
+                    const value = this.grid[row][col];
+                    const dateString = this.getDateForGridPosition(row, col);
+                    
+                    // Remove existing classes
+                    square.classList.remove('alive-1', 'alive-2', 'alive-3', 'alive-4', 'birth', 'death');
+                    
+                    if (value > 0) {
+                        // Determine contribution level based on value
+                        let level = 1;
+                        if (value > 10) level = 4;
+                        else if (value > 5) level = 3;
+                        else if (value > 2) level = 2;
+                        
+                        square.classList.add(`alive-${level}`);
+                        const contributionText = value === 1 ? 'contribution' : 'contributions';
+                        square.title = `${value} ${contributionText} on ${dateString}`;
+                    } else {
+                        square.title = `No contributions on ${dateString}`;
+                    }
+                }
+            }
+        }
+    }
+
+    getDateForGridPosition(row, col) {
+        const targetDate = this.calculateDateFromGridPosition(row, col);
+        
+        const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        
+        const month = months[targetDate.getMonth()];
+        const day = targetDate.getDate();
+        const dayWithSuffix = this.addOrdinalSuffix(day);
+        
+        return `${month} ${dayWithSuffix}`;
+    }
+
+    calculateDateFromGridPosition(row, col) {
+        const startWeekBegin = new Date(this.startDate);
+        const daysFromSunday = this.startDate.getDay();
+        startWeekBegin.setDate(this.startDate.getDate() - daysFromSunday);
+        
+        const targetDate = new Date(startWeekBegin);
+        targetDate.setDate(startWeekBegin.getDate() + (col * 7) + row);
+        
+        return targetDate;
+    }
+
+    addOrdinalSuffix(day) {
+        if (day >= 11 && day <= 13) {
+            return day + 'th';
+        }
+        switch (day % 10) {
+            case 1: return day + 'st';
+            case 2: return day + 'nd';
+            case 3: return day + 'rd';
+            default: return day + 'th';
+        }
+    }
+
+    generateMockData() {
+        // Generate realistic contribution data
+        this.grid = this.createRandomGrid();
+        
+        // Add some clusters of activity
+        for (let i = 0; i < 5; i++) {
+            const centerRow = Math.floor(Math.random() * this.ROWS);
+            const centerCol = Math.floor(Math.random() * this.COLS);
+            
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    const row = centerRow + dr;
+                    const col = centerCol + dc;
+                    if (row >= 0 && row < this.ROWS && col >= 0 && col < this.COLS) {
+                        this.grid[row][col] = Math.floor(Math.random() * 4) + 1;
+                    }
+                }
+            }
+        }
+        
+        this.updateGridDisplay();
+    }
+
+    // Animation methods
+    startPatternAnimation() {
+        this.stopAnimation();
+        this.isRunning = true;
+        this.generation = 0;
+        
+        if (this.githubData) {
+            this.grid = this.githubData.map(row => [...row]);
+        } else {
+            this.grid = this.createRandomGrid();
+        }
+        
+        this.initializePattern();
+        this.animate();
+    }
+
+    stopAnimation() {
+        this.isRunning = false;
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+            this.animationFrame = null;
+        }
+        
+        const letters = this.container.querySelectorAll('.cc-letter');
+        letters.forEach(letter => letter.classList.remove('active'));
+        this.activeLetterIndex = null;
+    }
+
+    animate() {
+        if (!this.isRunning) return;
+    
+        const now = performance.now();
+        const elapsed = now - this.lastUpdateTime;
+    
+        if (elapsed > this.animationSpeed) {
+            this.lastUpdateTime = now - (elapsed % this.animationSpeed);
+    
+            const { newGrid, hasChanged } = this.executePattern(this.grid, this.currentPattern, this.patternState);
+    
+            if (this.currentPattern === this.PATTERNS.GAME_OF_LIFE && !hasChanged) {
+                this.stopAnimation();
+                return;
+            }
+    
+            if (this.generation >= this.maxGenerations) {
+                this.stopAnimation();
+                return;
+            }
+    
+            this.grid = newGrid;
+            this.generation++;
+            this.updateGridDisplay();
+        }
+    
+        this.animationFrame = requestAnimationFrame(() => this.animate());
+    }
+
+    initializePattern() {
+        this.patternState = {};
+        
+        switch (this.currentPattern) {
+            case this.PATTERNS.WAVE:
+                this.patternState.time = 0;
+                break;
+            case this.PATTERNS.SPIRAL:
+                this.patternState.time = 0;
+                break;
+            case this.PATTERNS.RIPPLE:
+                this.patternState.ripples = [];
+                break;
+            case this.PATTERNS.RULE30:
+                this.grid = this.createEmptyGrid();
+                this.grid[0][Math.floor(this.COLS / 2)] = 1;
+                break;
+        }
+    }
+
+    executePattern(currentGrid, pattern, state) {
+        switch (pattern) {
+            case this.PATTERNS.GAME_OF_LIFE:
+                return this.gameOfLifeStep(currentGrid);
+            case this.PATTERNS.RIPPLE:
+                return this.rippleStep(currentGrid, state);
+            case this.PATTERNS.WAVE:
+                return this.waveStep(currentGrid, state);
+            case this.PATTERNS.RAIN:
+                return this.rainStep(currentGrid, state);
+            case this.PATTERNS.SPIRAL:
+                return this.spiralStep(currentGrid, state);
+            case this.PATTERNS.NOISE:
+                return this.noiseStep(currentGrid);
+            case this.PATTERNS.RULE30:
+                return this.rule30Step(currentGrid);
+            default:
+                return { newGrid: currentGrid, hasChanged: false };
+        }
+    }
+
+    // Pattern implementations
+    gameOfLifeStep(currentGrid) {
+        const newGrid = this.createEmptyGrid();
+        let hasChanged = false;
+
+        for (let row = 0; row < this.ROWS; row++) {
+            for (let col = 0; col < this.COLS; col++) {
+                const neighbors = this.countNeighbors(currentGrid, row, col);
+                const currentCell = currentGrid[row][col];
+
+                if (currentCell === 1) {
+                    newGrid[row][col] = neighbors === 2 || neighbors === 3 ? 1 : 0;
+                } else {
+                    newGrid[row][col] = neighbors === 3 ? 1 : 0;
+                }
+
+                if (newGrid[row][col] !== currentCell) {
+                    hasChanged = true;
+                }
+            }
+        }
+
+        return { newGrid, hasChanged };
+    }
+
+    waveStep(currentGrid, state) {
+        const newGrid = this.createEmptyGrid();
+        const time = state.time || 0;
+
+        for (let row = 0; row < this.ROWS; row++) {
+            for (let col = 0; col < this.COLS; col++) {
+                const wave1 = Math.sin(col * 0.2 + time * 0.1);
+                const wave2 = Math.sin(row * 0.3 + time * 0.15);
+                const combined = (wave1 + wave2) / 2;
+
+                newGrid[row][col] = combined > 0.3 ? 1 : 0;
+            }
+        }
+
+        this.patternState = { time: time + 1 };
+        return { newGrid, hasChanged: true };
+    }
+
+    rippleStep(currentGrid, state) {
+        const newGrid = this.createEmptyGrid();
+        const { ripples = [] } = state;
+
+        const newRipples = [...ripples];
+        if (Math.random() < 0.05) {
+            newRipples.push({
+                centerRow: Math.floor(Math.random() * this.ROWS),
+                centerCol: Math.floor(Math.random() * this.COLS),
+                radius: 0,
+                maxRadius: Math.random() * 15 + 5
+            });
+        }
+
+        for (let i = newRipples.length - 1; i >= 0; i--) {
+            const ripple = newRipples[i];
+            ripple.radius += 0.5;
+
+            if (ripple.radius > ripple.maxRadius) {
+                newRipples.splice(i, 1);
+                continue;
+            }
+
+            for (let row = 0; row < this.ROWS; row++) {
+                for (let col = 0; col < this.COLS; col++) {
+                    const distance = Math.sqrt(
+                        Math.pow(row - ripple.centerRow, 2) + Math.pow(col - ripple.centerCol, 2)
+                    );
+
+                    if (Math.abs(distance - ripple.radius) < 1) {
+                        newGrid[row][col] = 1;
+                    }
+                }
+            }
+        }
+
+        this.patternState = { ripples: newRipples };
+        return { newGrid, hasChanged: true };
+    }
+
+    rainStep(currentGrid, state) {
+        const newGrid = [...currentGrid.map(row => [...row])];
+
+        for (let col = 0; col < this.COLS; col++) {
+            if (Math.random() < 0.05) {
+                newGrid[0][col] = 1;
+            }
+        }
+
+        for (let row = this.ROWS - 1; row > 0; row--) {
+            for (let col = 0; col < this.COLS; col++) {
+                if (currentGrid[row - 1][col] === 1) {
+                    newGrid[row][col] = 1;
+                    newGrid[row - 1][col] = 0;
+                }
+            }
+        }
+
+        for (let col = 0; col < this.COLS; col++) {
+            if (Math.random() < 0.3) {
+                newGrid[this.ROWS - 1][col] = 0;
+            }
+        }
+
+        return { newGrid, hasChanged: true };
+    }
+
+    spiralStep(currentGrid, state) {
+        const newGrid = this.createEmptyGrid();
+        const time = state.time || 0;
+        const centerRow = this.ROWS / 2;
+        const centerCol = this.COLS / 2;
+
+        for (let row = 0; row < this.ROWS; row++) {
+            for (let col = 0; col < this.COLS; col++) {
+                const dx = col - centerCol;
+                const dy = row - centerRow;
+                const angle = Math.atan2(dy, dx);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                const spiralValue = Math.sin(angle * 3 + distance * 0.5 - time * 0.2);
+                newGrid[row][col] = spiralValue > 0.5 ? 1 : 0;
+            }
+        }
+
+        this.patternState = { time: time + 1 };
+        return { newGrid, hasChanged: true };
+    }
+
+    noiseStep(currentGrid) {
+        const newGrid = this.createEmptyGrid();
+
+        for (let row = 0; row < this.ROWS; row++) {
+            for (let col = 0; col < this.COLS; col++) {
+                newGrid[row][col] = Math.random() > 0.8 ? 1 : 0;
+            }
+        }
+
+        return { newGrid, hasChanged: true };
+    }
+
+    rule30Step(currentGrid) {
+        const newGrid = [...currentGrid.map(row => [...row])];
+
+        for (let row = 0; row < this.ROWS - 1; row++) {
+            for (let col = 0; col < this.COLS; col++) {
+                const left = col > 0 ? currentGrid[row][col - 1] : 0;
+                const center = currentGrid[row][col];
+                const right = col < this.COLS - 1 ? currentGrid[row][col + 1] : 0;
+
+                const pattern = (left > 0 ? 4 : 0) + (center > 0 ? 2 : 0) + (right > 0 ? 1 : 0);
+                const newValue = [0, 1, 1, 1, 1, 0, 0, 0][pattern];
+
+                newGrid[row + 1][col] = newValue;
+            }
+        }
+
+        return { newGrid, hasChanged: true };
+    }
+
+    countNeighbors(grid, row, col) {
+        let count = 0;
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],           [0, 1],
+            [1, -1],  [1, 0],  [1, 1]
+        ];
+
+        for (const [dr, dc] of directions) {
+            const newRow = row + dr;
+            const newCol = col + dc;
+            if (newRow >= 0 && newRow < this.ROWS && newCol >= 0 && newCol < this.COLS) {
+                count += grid[newRow][newCol];
+            }
+        }
+        return count;
+    }
+}
+
+// Auto-initialize with React conflict protection
+function initializeCalendar() {
+    console.log('🚀 Initializing calendar (React-safe mode)...');
+    let defaultContainer = document.querySelector('#contribution-calendar');
+    console.log('📦 Container found:', defaultContainer);
+    console.log('⚙️ Config loaded:', window.ContributionCalendarConfig);
+    
+    // If container doesn't exist, create it
+    if (!defaultContainer) {
+        console.log('🔧 Container missing - creating new one...');
+        defaultContainer = document.createElement('div');
+        defaultContainer.id = 'contribution-calendar';
+        defaultContainer.setAttribute('data-calendar-container', 'true');
+        // Apply fade-in class so timing always works even if wrapper is recreated
+        defaultContainer.classList.add('gm-fade-in-late');
+        
+        // Try to find a good place to insert it
+        const lastTextDiv = document.querySelector('.fade-in:last-child');
+        if (lastTextDiv && lastTextDiv.parentNode) {
+            // Insert directly after the last text block
+            lastTextDiv.parentNode.insertBefore(defaultContainer, lastTextDiv.nextSibling);
+            console.log('✅ Created and inserted new container');
+        } else {
+            document.body.appendChild(defaultContainer);
+            console.log('✅ Created container and added to body');
+        }
+    }
+    // Ensure fade-in class exists even when container was present
+    if (defaultContainer && !defaultContainer.classList.contains('gm-fade-in-late')) {
+        defaultContainer.classList.add('gm-fade-in-late');
+    }
+    
+    if (defaultContainer && !window.contributionCalendar) {
+        console.log('✅ Creating calendar instance...');
+        try {
+            window.contributionCalendar = new ContributionCalendar();
+            console.log('🎉 Calendar created successfully:', window.contributionCalendar);
+        } catch (error) {
+            console.error('❌ Error creating calendar:', error);
+        }
+    } else if (window.contributionCalendar) {
+        console.log('ℹ️ Calendar already exists, skipping...');
+    }
+}
+
+// Multiple initialization attempts to handle React conflicts
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📅 DOM Content Loaded - Starting calendar initialization...');
+    
+    // First attempt: immediate
+    setTimeout(initializeCalendar, 100);
+    
+    // Second attempt: after React hydration
+    setTimeout(initializeCalendar, 1000);
+    
+    // Third attempt: after all scripts load
+    setTimeout(initializeCalendar, 2000);
+});
+
+// Fallback: Initialize when window loads
+window.addEventListener('load', () => {
+    console.log('🌐 Window loaded - Final calendar initialization attempt...');
+    setTimeout(initializeCalendar, 500);
+});
+
+// Backup: Initialize after a delay if nothing else worked
+setTimeout(() => {
+    if (!window.contributionCalendar) {
+        console.log('⏰ Backup initialization - Calendar not found, trying again...');
+        initializeCalendar();
+    }
+}, 3000);
+
+// Monitor for React interference and re-initialize if needed
+setInterval(() => {
+    const container = document.querySelector('#contribution-calendar');
+    if (container && container.children.length === 0 && window.contributionCalendar) {
+        console.log('🔄 React interference detected - Re-initializing calendar...');
+        setTimeout(initializeCalendar, 100);
+    }
+}, 2000);
