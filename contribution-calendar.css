@@ -81,12 +81,18 @@
 }
 
 .contribution-calendar-container .cc-title {
-  margin-bottom: 0; /* Remove extra space below title */
-  font-weight: var(--font-weight-medium); /* font-medium */
-  color: var(--color-gray-11); /* text-gray-11 */
-  font-size: inherit; /* Match project's default font size */
-  line-height: inherit; /* Match project's default line height */
-  letter-spacing: -0.12em; /* Subtle tight spacing for smaller text */
+  margin-bottom: 0;
+  /* Remove extra space below title */
+  font-weight: var(--font-weight-medium);
+  /* font-medium */
+  color: var(--color-gray-11);
+  /* text-gray-11 */
+  font-size: inherit;
+  /* Match project's default font size */
+  line-height: inherit;
+  /* Match project's default line height */
+  letter-spacing: -0.12em;
+  /* Subtle tight spacing for smaller text */
   user-select: none;
   transition: color 0.5s ease-in-out;
   margin-top: 0;
@@ -229,9 +235,10 @@
 }
 
 
- .contribution-calendar-container.dark .cc-square.alive-4 {
-   background-color: #39d353;
- }
+.contribution-calendar-container.dark .cc-square.alive-4 {
+  background-color: #39d353;
+}
+
 /*
   The error occurs because CSS variable declarations (e.g., --cc-square-empty-light) and animation rules (.gm-fade-in-late, @keyframes fadeIn) are mixed outside of a selector or :root block, and there are stray closing braces. CSS variables must be inside a selector, and animation rules must be outside variable blocks. Below is the corrected code.
 */
@@ -281,7 +288,7 @@
     width: fit-content;
     max-width: calc(100vw - 3rem);
     margin: 0 auto;
-    padding: 1.5rem;
+    /* padding: 1.5rem; */
   }
 }
 
@@ -290,7 +297,7 @@
     width: fit-content;
     max-width: calc(100vw - 4rem);
     margin: 0 auto;
-    margin-left: 10rem;
+    /* margin-left: 9rem; */
     padding: calc(var(--spacing)*4);
   }
 }
@@ -318,12 +325,18 @@
 }
 
 .contribution-calendar-container .cc-title {
-  margin-bottom: 0; /* Remove extra space below title */
-  font-weight: var(--font-weight-medium); /* font-medium */
-  color: var(--color-gray-11); /* text-gray-11 */
-  font-size: inherit; /* Match project's default font size */
-  line-height: inherit; /* Match project's default line height */
-  letter-spacing: -0.12em; /* Subtle tight spacing for smaller text */
+  margin-bottom: 0;
+  /* Remove extra space below title */
+  font-weight: var(--font-weight-medium);
+  /* font-medium */
+  color: var(--color-gray-11);
+  /* text-gray-11 */
+  font-size: inherit;
+  /* Match project's default font size */
+  line-height: inherit;
+  /* Match project's default line height */
+  letter-spacing: -0.12em;
+  /* Subtle tight spacing for smaller text */
   user-select: none;
   transition: color 0.5s ease-in-out;
   margin-top: 0;
@@ -499,9 +512,11 @@
   0% {
     transform: scale(0.8);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -511,9 +526,11 @@
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(0.9);
   }
+
   100% {
     transform: scale(1);
   }
@@ -527,18 +544,18 @@
     max-width: calc(100vw - 1.5rem);
     margin: 0 auto;
   }
-  
+
   .contribution-calendar-container .cc-title {
     /* Maintain responsive scaling while keeping project typography */
     font-size: inherit;
     line-height: inherit;
   }
-  
+
   .contribution-calendar-container .cc-square {
     width: 11px;
     height: 11px;
   }
-  
+
   .contribution-calendar-container .cc-grid-container {
     padding: 6px;
     gap: 2px;
@@ -552,32 +569,33 @@
     max-width: calc(100vw - 1rem);
     margin: 0 auto;
   }
-  
+
   .contribution-calendar-container .cc-header {
     flex-direction: column;
     gap: 0.5rem;
     align-items: flex-start;
   }
-  
+
   .contribution-calendar-container .cc-title {
     /* Maintain responsive scaling while keeping project typography */
     font-size: inherit;
     line-height: inherit;
   }
-  
+
   .contribution-calendar-container .cc-square {
     width: 9px;
     height: 9px;
   }
-  
+
   .contribution-calendar-container .cc-grid-container {
     padding: 4px;
     gap: 1px;
   }
-  
+
   /* Ensure full visibility on very small screens */
   .contribution-calendar-container .cc-calendar-container {
-    padding-bottom: 10px; /* Space for scrollbar */
+    padding-bottom: 10px;
+    /* Space for scrollbar */
   }
 }
 
@@ -600,8 +618,6 @@
   opacity: 0;
   filter: blur(10px);
   transform: translateY(20px);
-  /* Force positioning to stay left-aligned */
-  margin-left: 0 !important;
   max-width: 1000px !important;
   text-align: left !important;
 }
@@ -619,9 +635,11 @@
   0% {
     transform: scale(0.8);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
@@ -631,9 +649,11 @@
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(0.9);
   }
+
   100% {
     transform: scale(1);
   }
@@ -647,21 +667,148 @@
     max-width: calc(100vw - 1.5rem);
     margin: 0 auto;
   }
-  
+
   .contribution-calendar-container .cc-title {
     /* Maintain responsive scaling while keeping project typography */
     font-size: inherit;
     line-height: inherit;
   }
-  
+
   .contribution-calendar-container .cc-square {
     width: 11px;
     height: 11px;
   }
-  
+
   .contribution-calendar-container .cc-grid-container {
     padding: 6px;
     gap: 2px;
+  }
+}
+
+/* ===================== Responsive Enhancements (Non-breaking) ===================== */
+/* Default responsive variables */
+.contribution-calendar-container {
+  --cc-cell-size: 14px;
+  --cc-gap: 3px;
+  --cc-mobile-tap-size: 44px;
+}
+
+/* Use variables for sizing and gaps so we can scale per breakpoint */
+.contribution-calendar-container .cc-square {
+  width: var(--cc-cell-size);
+  height: var(--cc-cell-size);
+  position: relative;
+}
+
+.contribution-calendar-container .cc-grid-container {
+  gap: var(--cc-gap);
+}
+
+.contribution-calendar-container .cc-column {
+  gap: var(--cc-gap);
+}
+
+/* Breakpoints */
+/* Mobile: 320px - 767px */
+@media (max-width: 767.98px) {
+  /* Fix main page container */
+  body > .flex.flex-col {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+    align-items: center !important;
+  }
+
+  /* Fix hero text container widths */
+  .fade-in:nth-of-type(1) {
+    width: 100% !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+
+  /* Fix subtext containers */
+  .fade-in:nth-of-type(2),
+  .fade-in:nth-of-type(3) {
+    width: 100% !important;
+    max-width: calc(100vw - 2rem) !important;
+  }
+
+  /* Calendar wrapper fixes */
+  .gm-fade-in-late {
+    width: 100% !important;
+    max-width: calc(100vw - 1rem) !important;
+    margin: 0 auto !important;
+    padding: 0.5rem !important;
+  }
+
+  .contribution-calendar-container {
+    width: 100%;
+    max-width: calc(100vw - 1rem);
+    padding: 0.5rem !important;
+  }
+
+  /* Prevent overflow and compress grid */
+  .contribution-calendar-container {
+    --cc-cell-size: 6px;
+    --cc-gap: 1px;
+  }
+
+  .contribution-calendar-container .cc-grid-container {
+    min-width: auto;
+  }
+
+  .contribution-calendar-container .cc-calendar-container {
+    overflow-x: auto !important;
+    padding: 0.25rem !important;
+  }
+
+  .contribution-calendar-container .cc-grid-container {
+    padding: 4px !important;
+  }
+
+  /* Touch-friendly hit area without changing visual size */
+  .contribution-calendar-container .cc-square::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: var(--cc-mobile-tap-size);
+    height: var(--cc-mobile-tap-size);
+    transform: translate(-50%, -50%);
+  }
+
+  /* Mobile typography scaling */
+  .fade-element {
+    font-size: clamp(21px, 6vw, 40px) !important;
+    line-height: 1.1 !important;
+    word-break: break-word !important;
+  }
+  
+
+
+  /* Ensure calendar wrapper is full-width and centered
+  /* .gm-fade-in-late {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  } */
+}
+
+/* Tablet: 768px - 1023px */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .contribution-calendar-container {
+    --cc-cell-size: 10px;
+    --cc-gap: 2px;
+    margin-left: -1rem;
+  }
+}
+
+/* Desktop: 1024px+ */
+@media (min-width: 1024px) {
+  .contribution-calendar-container {
+    --cc-cell-size: 14px;
+    --cc-gap: 3px;
+    margin-left: 8rem;
   }
 }
 
@@ -672,31 +819,32 @@
     max-width: calc(100vw - 1rem);
     margin: 0 auto;
   }
-  
+
   .contribution-calendar-container .cc-header {
     flex-direction: column;
     gap: 0.5rem;
     align-items: flex-start;
   }
-  
+
   .contribution-calendar-container .cc-title {
     /* Maintain responsive scaling while keeping project typography */
     font-size: inherit;
     line-height: inherit;
   }
-  
+
   .contribution-calendar-container .cc-square {
     width: 9px;
     height: 9px;
   }
-  
+
   .contribution-calendar-container .cc-grid-container {
     padding: 4px;
     gap: 1px;
   }
-  
+
   /* Ensure full visibility on very small screens */
   .contribution-calendar-container .cc-calendar-container {
-    padding-bottom: 10px; /* Space for scrollbar */
+    padding-bottom: 10px;
+    /* Space for scrollbar */
   }
 }
