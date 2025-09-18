@@ -91,7 +91,7 @@
                         n ? (o.src = n, o.onload = () => e(), o.onerror = t) : r && (o.innerHTML = r.children, setTimeout(e)), document.head.appendChild(o)
                     }))
                 }, Promise.resolve()).catch(e => {
-                    console.error(e)
+                    // console.error(e)
                 }).then(() => {
                     n()
                 }) : n()

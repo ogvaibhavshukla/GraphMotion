@@ -92,6 +92,13 @@
     <!-- Contribution Calendar Scripts -->
     <script src="contribution-calendar-config.js"></script>
     <script src="contribution-calendar.js"></script>
+
+    <script>
+        console.log('Checking calendar files...');
+        fetch('./contribution-calendar.js')
+          .then(r => console.log('calendar.js status:', r.status))
+          .catch(e => console.error('calendar.js failed:', e));
+    </script>
     
     <script src="_next/static/chunks/webpack-8658fdbc42bfbbae.js" async=""></script>
     <script>

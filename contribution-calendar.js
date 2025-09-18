@@ -87,14 +87,14 @@ class ContributionCalendar {
     }
 
     createContainer() {
-        console.log('🏗️ createContainer called');
-        console.log('🔍 Looking for container:', this.options.container);
+        // console.log('🏗️ createContainer called');
+        // console.log('🔍 Looking for container:', this.options.container);
         const targetElement = document.querySelector(this.options.container);
-        console.log('📦 Target element found:', targetElement);
-        if (!targetElement) {
-            console.error(`Container element "${this.options.container}" not found`);
-            return;
-        }
+        // console.log('📦 Target element found:', targetElement);
+        // if (!targetElement) {
+            // console.error(`Container element "${this.options.container}" not found`);
+            // return;
+        // }
 
         // Protect container from React interference
         targetElement.setAttribute('data-calendar-container', 'true');
@@ -596,14 +596,14 @@ class ContributionCalendar {
 
 // Auto-initialize with React conflict protection
 function initializeCalendar() {
-    console.log('🚀 Initializing calendar (React-safe mode)...');
+    // console.log('🚀 Initializing calendar (React-safe mode)...');
     let defaultContainer = document.querySelector('#contribution-calendar');
-    console.log('📦 Container found:', defaultContainer);
-    console.log('⚙️ Config loaded:', window.ContributionCalendarConfig);
+    // console.log('📦 Container found:', defaultContainer);
+    // console.log('⚙️ Config loaded:', window.ContributionCalendarConfig);
     
     // If container doesn't exist, create it
     if (!defaultContainer) {
-        console.log('🔧 Container missing - creating new one...');
+        // console.log('🔧 Container missing - creating new one...');
         defaultContainer = document.createElement('div');
         defaultContainer.id = 'contribution-calendar';
         defaultContainer.setAttribute('data-calendar-container', 'true');
@@ -615,10 +615,10 @@ function initializeCalendar() {
         if (lastTextDiv && lastTextDiv.parentNode) {
             // Insert directly after the last text block
             lastTextDiv.parentNode.insertBefore(defaultContainer, lastTextDiv.nextSibling);
-            console.log('✅ Created and inserted new container');
+            // console.log('✅ Created and inserted new container');
         } else {
             document.body.appendChild(defaultContainer);
-            console.log('✅ Created container and added to body');
+            // console.log('✅ Created container and added to body');
         }
     }
     // Ensure fade-in class exists even when container was present
@@ -627,21 +627,21 @@ function initializeCalendar() {
     }
     
     if (defaultContainer && !window.contributionCalendar) {
-        console.log('✅ Creating calendar instance...');
+        // console.log('✅ Creating calendar instance...');
         try {
             window.contributionCalendar = new ContributionCalendar();
-            console.log('🎉 Calendar created successfully:', window.contributionCalendar);
+            // console.log('🎉 Calendar created successfully:', window.contributionCalendar);
         } catch (error) {
-            console.error('❌ Error creating calendar:', error);
+            // console.error('❌ Error creating calendar:', error);
         }
     } else if (window.contributionCalendar) {
-        console.log('ℹ️ Calendar already exists, skipping...');
+        // console.log('ℹ️ Calendar already exists, skipping...');
     }
 }
 
 // Multiple initialization attempts to handle React conflicts
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('📅 DOM Content Loaded - Starting calendar initialization...');
+    // console.log('📅 DOM Content Loaded - Starting calendar initialization...');
     
     // First attempt: immediate
     setTimeout(initializeCalendar, 100);
@@ -655,14 +655,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fallback: Initialize when window loads
 window.addEventListener('load', () => {
-    console.log('🌐 Window loaded - Final calendar initialization attempt...');
+    // console.log('🌐 Window loaded - Final calendar initialization attempt...');
     setTimeout(initializeCalendar, 500);
 });
 
 // Backup: Initialize after a delay if nothing else worked
 setTimeout(() => {
     if (!window.contributionCalendar) {
-        console.log('⏰ Backup initialization - Calendar not found, trying again...');
+        // console.log('⏰ Backup initialization - Calendar not found, trying again...');
         initializeCalendar();
     }
 }, 3000);
@@ -671,7 +671,7 @@ setTimeout(() => {
 setInterval(() => {
     const container = document.querySelector('#contribution-calendar');
     if (container && container.children.length === 0 && window.contributionCalendar) {
-        console.log('🔄 React interference detected - Re-initializing calendar...');
+        // console.log('🔄 React interference detected - Re-initializing calendar...');
         setTimeout(initializeCalendar, 100);
     }
 }, 2000);
