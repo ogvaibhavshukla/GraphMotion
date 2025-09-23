@@ -13,25 +13,10 @@ Graphmotion/
 ├── README.md                           # This documentation file
 ├── index.html                          # Main HTML file with the website content
 ├── favicon.ico                         # Website icon (16x16 pixels)
+├── style.css                           # Main site stylesheet
 ├── contribution-calendar.js            # Core calendar component logic
 ├── contribution-calendar.css           # Calendar styling and animations
-├── contribution-calendar-config.js     # Configuration file for calendar settings
-├── _next/                              # Next.js static assets directory
-│   └── static/
-│       ├── css/                        # CSS stylesheets
-│       │   └── e2a712f898d68baf.css    # Main stylesheet (Tailwind CSS + custom styles)
-│       └── chunks/                     # JavaScript chunks
-│           ├── 117-d5d2b4050a9f3424.js      # Main React component bundle
-│           ├── fd9d1056-6ba77b73c057c902.js # React runtime and utilities
-│           ├── main-app-2dcde4753ea0d175.js # Main application entry point
-│           ├── webpack-8658fdbc42bfbbae.js  # Webpack runtime
-│           └── app/                    # App-specific JavaScript
-│               └── page-48096c185ec0170d.js # Page component with fade-in logic
-├── fonts.googleapis.com/               # Google Fonts CSS files
-│   └── css2.css                        # Inter font family definitions
-└── fonts.gstatic.com/                  # Google Fonts font files
-    └── s/inter/v19/
-        └── UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2 # Inter font file
+└── contribution-calendar-config.js     # Configuration file for calendar settings
 ```
 
 ## 🔧 File Descriptions
@@ -102,82 +87,24 @@ Graphmotion/
 
 ### CSS Files
 
-#### `_next/static/css/e2a712f898d68baf.css`
-- **Purpose**: Main stylesheet containing all CSS styles
+#### `style.css`
+- **Purpose**: Main site stylesheet containing global styles (replaces previous built CSS path)
 - **Content**:
-  - Tailwind CSS framework (utility classes)
-  - Custom CSS variables and base styles
+  - Consolidated base styles and animation utilities
   - Responsive breakpoints (sm, md, xl)
   - Dark theme styling
-  - Animation utilities
-- **Key Features**:
-  - Mobile-first responsive design
-  - Dark color scheme
-  - Flexbox layouts
-  - Custom typography settings
+  - Layout utilities used by `index.html`
 
 ### JavaScript Files
 
-#### `_next/static/chunks/117-d5d2b4050a9f3424.js`
-- **Purpose**: Main React component bundle
-- **Content**: 
-  - React component definitions
-  - Fade-in animation logic
-  - State management for animations
-  - Responsive behavior handling
-- **Size**: ~257KB (minified)
-
-#### `_next/static/chunks/fd9d1056-6ba77b73c057c902.js`
-- **Purpose**: React runtime and utility functions
-- **Content**:
-  - React library code
-  - DOM manipulation utilities
-  - Event handling
-  - Component lifecycle methods
-- **Size**: ~395KB (minified)
-
-#### `_next/static/chunks/main-app-2dcde4753ea0d175.js`
-- **Purpose**: Main application entry point
-- **Content**:
-  - Application initialization
-  - Route handling
-  - Global state setup
-- **Size**: ~615 bytes
-
-#### `_next/static/chunks/webpack-8658fdbc42bfbbae.js`
-- **Purpose**: Webpack runtime and module loading
-- **Content**:
-  - Module bundling system
-  - Dynamic imports
-  - Code splitting logic
-- **Size**: ~6KB
-
-#### `_next/static/chunks/app/page-48096c185ec0170d.js`
-- **Purpose**: Page-specific component with fade-in functionality
-- **Content**:
-  - FadeIn component implementation
-  - Animation timing logic
-  - Responsive text handling
-  - Code display functionality
-- **Size**: ~10KB
+- The repository now ships only hand-authored JavaScript:
+  - `contribution-calendar.js` (component logic)
+  - `contribution-calendar-config.js` (settings)
+  - No built chunk files are tracked.
 
 ### Font Files
 
-#### `fonts.googleapis.com/css2.css`
-- **Purpose**: Google Fonts CSS definitions
-- **Content**:
-  - Inter font family declarations
-  - Multiple font weights (400, 500)
-  - Unicode range definitions for different languages
-  - Font display optimization settings
-
-#### `fonts.gstatic.com/s/inter/v19/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2`
-- **Purpose**: Inter font file (WOFF2 format)
-- **Content**: 
-  - Inter font family glyphs
-  - Optimized for web display
-  - Compressed format for faster loading
-- **Size**: ~48KB
+- External fonts are now loaded at runtime via standard `<link>` to Google Fonts. No font files are tracked in the repository.
 
 ## 🎨 Design Features
 
