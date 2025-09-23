@@ -618,3 +618,59 @@ body {
 @media (max-width: 767.98px) {
     html, body { overflow-x: hidden; }
 }
+
+/* ===== Moved from index.html ===== */
+@keyframes fadeIn {
+	to {
+		opacity: 1;
+		filter: blur(0);
+		transform: translateY(0);
+	}
+}
+
+/* Code Panel Animation */
+@keyframes animate-fade-in {
+	0% {
+		opacity: 0;
+		transform: translate(1.25rem, 1.25rem);
+	}
+	100% {
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+}
+
+.animate-fade-in {
+	animation: animate-fade-in 0.7s ease forwards;
+	animation-delay: 2s;
+}
+
+/* Code panel specific styling */
+#code-panel {
+	font-family: inherit;
+	line-height: 1;
+}
+
+#code-panel code {
+	font-family: inherit;
+	font-size: 0.75rem;
+	color: #B4B5B5;
+}
+
+#copy-button {
+	font-size: 0.75rem;
+	font-weight: 500;
+	line-height: 1.5;
+}
+
+/* Explicit responsive control for heading remainder and subheading visibility */
+.heading-rest, .subheading-2 { display: none !important; }
+@media (min-width: 768px) {
+	.heading-rest { display: inline !important; }
+	.subheading-2 { display: inline-block !important; }
+}
+
+/* Mobile-only adjustments */
+@media (max-width: 768px) {
+	.first-word { letter-spacing: -0.5px !important; font-size: 40px !important; }
+}

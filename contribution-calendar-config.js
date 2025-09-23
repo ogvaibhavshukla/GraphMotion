@@ -25,4 +25,3 @@ window.ContributionCalendarConfig = {
     START_DATE: new Date(new Date().getFullYear(), 0, 1), // January 1st of current year
     END_DATE: new Date(new Date().getFullYear(), 11, 31)  // December 31st of current year
 };
-
